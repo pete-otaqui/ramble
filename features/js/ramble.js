@@ -28,7 +28,11 @@ var ramble = {
     });
   },
   run: function(path) {
-    $.get(path, function(data) { ramble._parse(data); ramble._run(); });
+    $.ajax({
+      url: path,
+      success: function(data) { ramble._parse(data); ramble._run(); },
+      dataType: 'text/plain'
+    });
   },
   addPath: function(regexp, path) {
     if(typeof(path) != 'string' && typeof(path) != 'function') throw('Must supply string or function for path');
@@ -61,10 +65,10 @@ var ramble = {
     this.matchers.push({ regexp: regexp, func: func });
   },
   _parse: function(data) {
-    this.steps = $(data.split('\n')).map(function() {
-      var trimmed = $.trim(this);
+    this.steps = $.map(data.split('\n'),function(line) {
+      var trimmed = $.trim(line.toString());
       return trimmed == '' ? null : trimmed;
-    }).toArray();
+    });
   },
   _run: function(elements) {
     var matchers = this.matchers;
