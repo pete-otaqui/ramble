@@ -10,7 +10,7 @@ var ramble = {
     this.iframe = $('<iframe id="browser" />').appendTo(workspace_selector);
     this.results = $(results_selector);
 
-    this.iframe.css('width', 600).css('height', 300).load(function() {
+    this.iframe.css('width', 500).css('height', 300).load(function() {
       ramble.pageLoading = false;
       var contents = $(this).contents();
       // Not entirely sure why we need to add click event here really.
@@ -30,8 +30,12 @@ var ramble = {
   run: function(path) {
     $.ajax({
       url: path,
-      success: function(data) { ramble._parse(data); ramble._run(); },
-      dataType: 'text/plain'
+      success: function(data) { 
+        ramble._parse(data);
+        ramble._run();
+      },
+      dataType: 'text/plain',
+      async: false
     });
   },
   addPath: function(regexp, path) {
@@ -65,9 +69,9 @@ var ramble = {
     this.matchers.push({ regexp: regexp, func: func });
   },
   _parse: function(data) {
-    this.steps = $.map(data.split('\n'),function(line) {
-      var trimmed = $.trim(line.toString());
-      return trimmed == '' ? null : trimmed;
+    $.each(data.split('\n'),function() {
+      var trimmed = $.trim(this.toString());
+      if(trimmed != '') ramble.steps.push(trimmed);
     });
   },
   _run: function(elements) {
@@ -81,10 +85,17 @@ var ramble = {
       if(ramble.debug) alert('Press OK to continue');
       
       var line = this.steps.shift().toString();
-      if(line.indexOf('Scenario:') == 0) {
+      // These checks are all a little crude but until we need proper parser this works.
+      if(line.indexOf('Feature:') == 0) {
+        this.results.append($('<h3/>', { text: line.replace(/^Feature:\s+/, '') }));
+        continue;
+      } else if(line.indexOf('Scenario:') == 0) {
         this.results.append($('<p/>', { text: line, 'class': 'scenario' }));
         continue;
-      };
+      } else if (line.indexOf('#') == 0) {
+        this.results.append($('<p/>', { text: line, 'class': 'comment' }));
+        continue;
+      }
       
       var found = null;
       $.each(matchers, function() {
@@ -96,7 +107,19 @@ var ramble = {
       });
       
       if(found == null) {
-        this.results.append($('<p/>', { html: "Couldn't find step definition for:<br/> - " + line, 'class': 'error' }));
+        var code = line.replace(/^(Given|When|Then|And)\s+/, '').replace(/"([^\"]*)"/, '"([^\"]*)"');
+        var args = [];
+        var quotes = line.match(/"/g);
+        if(quotes) {
+          for(i = 0; i < parseInt(quotes.length / 2); i++) {
+            args.push('arg' + (i + 1));
+          }
+        }
+        
+        this.results.append($('<p/>', { 
+          html: "Missing step definition:<br/><pre>ramble.match(/^" + code
+                          + '$/, function(' + args.join(', ') + ') {\n  // code\n});</pre>', 'class': 'missing'
+        }));
       } else {
         try {
           var result = found.func.apply(elements, found.matches);

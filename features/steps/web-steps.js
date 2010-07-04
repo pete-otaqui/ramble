@@ -20,7 +20,7 @@ ramble.match(/^I fill in "(.+)" with "(.+)"$/, function(label_text, value) {
   field.val(value);
 });
 
-ramble.match(/^I make the heading (.+)$/, function(color) {
+ramble.match(/^I make the heading "(.+)"$/, function(color) {
   var heading = this.find('h1');
   if(!heading.length) throw("Can't find heading");
   heading.css('color', color);
