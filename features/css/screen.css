@@ -1,0 +1,6 @@
+body        { font-size: 75%; font-family: Verdana, Arial, sans-serif; min-width: 920px; }
+#workspace  { float: left; }
+#results    { float: right; }
+.error      { color: #c00; }
+.ok         { color: #0c0; }
+.scenario   { font-weight: bold; margin-left: -20px; }

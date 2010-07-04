@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Ramble Runner</title>
+    <meta name="author" content="Jamie Hill" />
+    <link href="css/screen.css" media="screen, projection" rel="stylesheet" type="text/css" />
+    <script src="js/jquery-1.4.2.js" type="text/javascript"></script>
+    <script src="js/ramble.js" type="text/javascript"></script>
+    <script src="support/paths.js" type="text/javascript"></script>
+    <script src="steps/web-steps.js" type="text/javascript"></script>
+    
+    <script type="text/javascript">
+      $(document).ready(function() {
+        ramble.init('#workspace', '#results');
+        ramble.run('my.feature');
+      });
+    </script>
+  </head>
+  
+  <body>
+    <section id="workspace">
+    </section>
+    
+    <section id="results">
+    </section>
+  </body>
+</html>
