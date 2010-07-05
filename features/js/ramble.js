@@ -224,7 +224,8 @@ Ramble.Runner =  {
      */
     runStep : function(step) {
         Ramble._debug("Running step: ", step);
-        var status = "",
+        var status = "step",
+            text = step,
             found = null;
         if ( step.indexOf('#') == 0 ) {
             status = "comment";
@@ -235,19 +236,20 @@ Ramble.Runner =  {
                     found = { matches: match.slice(1), func: this.func };
                     return;
                 }
-            })
-        }
-        if ( found !== null ) {
-            try {
-                var result = found.func.apply(elements)
-            } catch (error) {
-                
+            });
+            if ( found !== null ) {
+                try {
+                    var result = found.func.apply(elements);
+                    status = "pass";
+                } catch (error) {
+                    status = "fail";
+                }
+            } else {
+                status = "missing";
+                text = Ramble.Parser.getExampleCode(step);
             }
-        } else {
-            status = "missing";
-            step = Ramble.Parser.getExampleCode(step);
         }
-        this.outputter.outputStep(step, status);
+        this.outputter.outputStep(text, status);
     },
     /**
      * Adds a path matcher
