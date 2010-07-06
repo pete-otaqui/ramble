@@ -42,6 +42,11 @@ Ramble.Parser = {
                 } else {
                     step = new Ramble.Step(scenario);
                     step.text = line;
+                    if ( line.indexOf('#') === 0 ) {
+                        step.comment = true;
+                    } else {
+                        step.comment = false;
+                    }
                     scenario.steps.push(step);
                 }
             }
@@ -85,6 +90,7 @@ Ramble.Step = function(scenario) {
     this.type = "step";
     this.text = "";
     this.status = "";
+    this.comment = false;
     this.scenario = scenario;
 }
 /**
@@ -158,7 +164,7 @@ Ramble.HtmlOutputter = {
             text += "<br /><em>" + step.error + "</em>";
         }
         if ( status == "missing" ) {
-            text += Ramble.Parser.getExampleCode(step, true);
+            text += "<br />"+Ramble.Parser.getExampleCode(step, true);
         }
         var li = this._currentSteps.append($('<li/>', {class:className, html:text}));
     },
@@ -244,7 +250,7 @@ Ramble.Runner =  {
                 break;
                 case "step" :
                     var step = item.text;
-                    if ( step.indexOf('#') == 0 ) {
+                    if ( item.comment == true ) {
                         item.status = "comment";
                     } else if ( $.trim(step) == "pending" ) {
                         item.status = "pending";
