@@ -1,3 +1,5 @@
+
+
 // Matchers should throw an error when they get an unexpected result.
 
 ramble.match(/^I follow "(.+)"$/, function(link_text) {
@@ -10,7 +12,7 @@ ramble.match(/^I press "(.+)"$/, function(button_text) {
   var button = this.find('input[type="submit"]').filter(function() { return $(this).val() == button_text; })
   if(!button.length) throw("Can't find button named: " + button_text);
   button.click();
-  ramble.pageLoading = true;
+  ramble.page_loading = true;
 });
 
 ramble.match(/^I fill in "(.+)" with "(.+)"$/, function(label_text, value) {
@@ -26,7 +28,7 @@ ramble.match(/^I make the heading "(.+)"$/, function(color) {
   heading.css('color', color);
 });
 
-ramble.match('^I should see "(.+)"$', function(string) {
+ramble.match(/^I should see "(.+)"$/, function(string) {
   if(this.text().indexOf(string) == -1) throw('Should have seen: ' + string);
 });
 
