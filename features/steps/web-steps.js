@@ -1,5 +1,3 @@
-
-
 // Matchers should throw an error when they get an unexpected result.
 
 ramble.match(/^I follow "(.+)"$/, function(link_text) {

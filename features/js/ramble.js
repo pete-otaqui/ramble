@@ -193,7 +193,7 @@ Ramble.Runner =  {
           Ramble.Runner.getUrl($(this).attr('href'));
         })
         contents.find('form').submit(function() {
-          console.log("submitting form");
+          // console.log("submitting form");
           Ramble.Runner.page_loading = true;
         });
         Ramble.Runner.run(contents);
@@ -210,7 +210,7 @@ Ramble.Runner =  {
    * @returns void
    */
   loadFeatureFile: function(file) {
-    //Ramble._debug('loadFeatureFile', file);
+    // Ramble._debug('loadFeatureFile', file);
     $.ajax({
       url: file,
       success: function(data) {
@@ -229,7 +229,7 @@ Ramble.Runner =  {
   run: function(elements) {
     while (this._queue_index < this._queue.length-1) {
       if (Ramble.Runner.page_loading) {
-        console.log(this._queue[ this._queue_index]);
+        // console.log(this._queue[ this._queue_index]);
         return;
       }
       var item = this._queue[ this._queue_index ];
