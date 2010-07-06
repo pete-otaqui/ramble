@@ -11,11 +11,13 @@
     
     <script type="text/javascript">
       $(document).ready(function() {
-        ramble.init();
+        ramble.init({
+            speed : "fast"
+        });
         ramble.loadFeatureFile('first.feature');
         ramble.loadFeatureFile('second.feature');
-        ramble.run();
         // Add further feature to run here
+        ramble.run();
       });
     </script>
   </head>
