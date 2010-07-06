@@ -1,10 +1,13 @@
 body                { font-size: 75%; font-family: Verdana, Arial, sans-serif; min-width: 920px; padding: 16px; }
 #workspace          { float: left; }
 #results            { float: right; }
-#results h3         { font-size: 1.2em; color: #999; }
-#results p          { padding-left: 40px; }
-#results p.error    { color: #c00; }
-#results p.ok       { color: #0c0; }
-#results p.missing  { color: #c90; }
-#results p.comment  { color: #ccc; font-style: italic; }
-#results p.scenario { font-weight: bold; padding-left: 20px; }
+.ramble-feature h3  { font-size: 1.2em; color: #666; margin-bottom:0px; }
+.ramble-description { padding-left:20px; margin-top:0px; color:#666; }
+.ramble-scenario    { padding-left: 20px; }
+.ramble-scenario h4 { margin-bottom:0px; }
+.ramble-steps       { list-style-type: none; margin:0; padding:0 0 0 20px; }
+.ramble-fail        { color: #c00; }
+.ramble-fail em     { color: #f99; }
+.ramble-pass        { color: #0c0; }
+.ramble-missing     { color: #c90; }
+.ramble-comment     { color: #ccc; font-style: italic; }

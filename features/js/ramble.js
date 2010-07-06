@@ -6,9 +6,9 @@
  * @requires jQuery
  */
 var Ramble = {
-    debug : true,
+    debug : false,
     _debug : function() {
-        console.log(arguments);
+        if ( this.debug ) console.log(arguments);
     }
 }
 
@@ -17,13 +17,12 @@ var Ramble = {
  * @version $Rev$
  * @requires Ramble
  */
-
 Ramble.Parser = {
     parseFeatureFile : function(data) {
         var feature = new Ramble.Feature();
         var describingFeature = true;
         var lines = data.split('\n');
-        var line, scenario;
+        var line, scenario, step;
         feature.title = lines.splice(0,1)[0];
         $.each(lines,function() {
             line = $.trim(this.toString());
@@ -37,50 +36,94 @@ Ramble.Parser = {
                 }
             } else {
                 if ( this.indexOf('Scenario:') != -1 ) {
-                    scenario = new Ramble.Scenario();
+                    scenario = new Ramble.Scenario(feature);
                     feature.scenarios.push(scenario);
                     scenario.title = line;
                 } else {
-                    scenario.steps.push(line);
+                    step = new Ramble.Step(scenario);
+                    step.text = line;
+                    scenario.steps.push(step);
                 }
             }
         });
         return feature;
     },
-    getExampleCode : function(step) {
-        var code = step.replace(/^(Given|When|Then|And)\s+/, '').replace(/"([^\"]*)"/, '"([^\"]*)"');
+    getExampleCode : function(step, html) {
+        var code = step.text.replace(/^(Given|When|Then|And)\s+/, '').replace(/"([^\"]*)"/, '"([^\"]*)"');
         var args = [];
-        var quotes = step.match(/"/g);
+        var quotes = step.text.match(/"/g);
         if(quotes) {
           for(i = 0; i < parseInt(quotes.length / 2); i++) {
             args.push('arg' + (i + 1));
           }
         }
         args = args.join(', ');
-        var example = "Missing step definition:<br/>";
-        example += '<pre><code>';
+        var example = "Missing step definition:";
+        example += html? this.html_nl : "\n";
+        example += html? this.html_code_pre : "\n";
         example += 'ramble.match(/^' + code + '$/, function(' + args + ') {\n  // code\n});';
-        example += '</code></pre>';
+        example += html? this.html_code_post : "";
         return example;
-    }
+    },
+    html_nl : "<br/>",
+    html_code_pre : "<pre><code>",
+    html_code_post : "</code></pre>"
 };
 Ramble.Feature = function() {
+    this.type = "feature";
     this.title = '';
     this.description = '';
     this.scenarios = [];
 }
-Ramble.Scenario = function() {
+Ramble.Scenario = function(feature) {
+    this.type = "scenario";
     this.title = '';
+    this.feature = feature;
     this.steps = [];
 };
+Ramble.Step = function(scenario) {
+    this.type = "step";
+    this.text = "";
+    this.status = "";
+    this.scenario = scenario;
+}
 /**
  * Outputter Interface defines the methods all outputters should have.
  */
 Ramble.IOutputter = {
+    /**
+     * Start output for a suite of features
+     * @public
+     * @returns void
+     */
     start : function() {},
+    /**
+     * Output a step
+     * @public
+     * @param Ramble.Feature a ramble feature object (defining .title and .description)
+     * @returns void
+     */
     outputFeature : function ( feature ) {},
+    /**
+     * Output a step
+     * @public
+     * @param Ramble.Scenario a ramble scenario object (defining .title)
+     * @returns void
+     */
     ouputScenario : function ( scenario ) {},
-    outputStep : function ( step ) {},
+    /**
+     * Output a step
+     * @public
+     * @param String step the string of the step definition
+     * @param String status the pass / fail / undefined status of the test
+     * @returns void
+     */
+    outputStep : function ( step, status ) {},
+    /**
+     * Stop output for a suite of features
+     * @public
+     * @returns void
+     */
     stop : function() {}
 };
 Ramble.HtmlOutputter = {
@@ -107,9 +150,17 @@ Ramble.HtmlOutputter = {
         this._currentSteps = $('<ul/>', {class:'ramble-steps'});
         div.append(this._currentSteps);
     },
-    outputStep : function ( step, status ) {
+    outputStep : function ( step ) {
+        var status = step.status;
         var className = 'ramble-'+status;
-        var li = this._currentSteps.append($('<li/>', {class:className, html:step}));
+        var text = step.text;
+        if ( status == "fail" ) {
+            text += "<br /><em>" + step.error + "</em>";
+        }
+        if ( status == "missing" ) {
+            text += Ramble.Parser.getExampleCode(step, true);
+        }
+        var li = this._currentSteps.append($('<li/>', {class:className, html:text}));
     },
     stop : function() {},
     results_selector : '#results'
@@ -126,25 +177,40 @@ Ramble.Runner =  {
     workspace_selector : '#workspace',
     outputter : Ramble.HtmlOutputter,
     parser : Ramble.Parser,
+    paths : [],
     features : [],
     matchers : [],
-    paths : [],
+    page_loading : false,
     init : function() {
         this.outputter.start();
         if ( !this.iframe ) {
             this.iframe = $('<iframe id="browser" />').appendTo(this.workspace_selector);
+            this.iframe.css({width:500, height:300});
+            this.iframe.load(function() {
+                Ramble.Runner.page_loading = false;
+                var contents = $(this).contents();
+                contents.find('a').click(function() {
+                    Ramble.Runner.getUrl($(this).attr('href'));
+                })
+                contents.find('form').submit(function() {
+                    console.log("submitting form");
+                    Ramble.Runner.page_loading = true;
+                });
+                Ramble.Runner.run(contents);
+            }).bind('urlChange.ramble', function(event, data) {
+                Ramble.Runner.page_loading = true;
+                $(this).attr('src', data.href);
+            });
         }
     },
     /**
      * Loads a feature file using Ajax
      * @public
      * @param String file URL to load
-     * @param Bool run_now run the file immediately after loading?
      * @returns void
      */
-    loadFeatureFile : function(file, run_now) {
-        Ramble._debug('loadFeatureFile', file, run_now);
-        this._files[file] = run_now;
+    loadFeatureFile : function(file) {
+        //Ramble._debug('loadFeatureFile', file);
         $.ajax({
             url: file,
             success: function(data) {
@@ -155,14 +221,61 @@ Ramble.Runner =  {
         });
     },
     /**
-     * Shortcut to loadFeatureFile(file, true)
-     * @see loadFeatureFile
+     * Test run method, a "breaking queue"
      * @public
-     * @param String file PAth to the feature file
+     * @param NodeList elements jQuery nodelist of elements to run tests on
      * @returns void
      */
-    run : function(file) {
-        this.loadFeatureFile(file, true);
+    run : function(elements) {
+        while ( this._queue_index < this._queue.length-1 ) {
+            if ( Ramble.Runner.page_loading ) {
+                console.log(this._queue[ this._queue_index] );
+                return;
+            }
+            var item = this._queue[ this._queue_index ];
+            var found;
+            $.each(this._befores, function() {
+                this.apply(elements);
+            });
+            switch ( item.type ) {
+                case "feature" :
+                    this.outputter.outputFeature(item);
+                break;
+                case "scenario" :
+                    this.outputter.outputScenario(item);
+                break;
+                case "step" :
+                    var step = item.text;
+                    if ( step.indexOf('#') == 0 ) {
+                        item.status = "comment";
+                    } else if ( $.trim(step) == "pending" ) {
+                        item.status = "pending";
+                    } else {
+                        found = null;
+                        $.each(this.matchers, function() {
+                            var match = step.replace(/^(Given|When|Then|And)\s+/, '').match(this.regexp);
+                            if ( match ) {
+                                found = { matches: match.slice(1), test: this.test };
+                                return;
+                            }
+                        });
+                        if ( found !== null ) {
+                            try {
+                                var result = found.test.apply(elements, found.matches);
+                                item.status = "pass";
+                            } catch (error) {
+                                item.status = "fail";
+                                item.error = error;
+                            }
+                        } else {
+                            item.status = "missing";
+                        }
+                    }
+                    this.outputter.outputStep(item);
+                break;
+            }
+            this._queue_index++;
+        }
     },
     /**
      * Add a matcher
@@ -177,81 +290,6 @@ Ramble.Runner =  {
         this.matchers.push(matcher);
     },
     /**
-     * Runs an array of features, defaults to own features array if
-     * one is not provided.
-     * @public
-     * @param Array features OPTIONAL array of features
-     * @returns void
-     */
-    runFeatures : function(features) {
-        if ( !features ) features = this.features;
-        Ramble._debug("Running features: ", features);
-        for ( var i=0, ii=feature.length; i<ii; i++ ) {
-            this.runFeature(features[i]);
-        }
-    },
-    /**
-     * Runs a feature.
-     * @public
-     * @returns void
-     */
-    runFeature : function(feature) {
-        Ramble._debug("Running feature: ", feature);
-        this.outputter.outputFeature(feature);
-        var scenarios = feature.scenarios;
-        for ( var i=0, ii=feature.scenarios.length; i<ii; i++ ) {
-            this.runScenario(scenarios[i]);
-        }
-    },
-    /**
-     * Runs a scenario.
-     * @public
-     * @param Ramble.Scenario scenario The scenario to run
-     * @returns void
-     */
-    runScenario : function(scenario) {
-        Ramble._debug("Running scenario: ", scenario);
-        this.outputter.outputScenario(scenario);
-        for ( var i=0, ii=scenario.steps.length; i<ii; i++ ) {
-            this.runStep(scenario.steps[i]);
-        }
-    },
-    /**
-     * Runs a step.
-     * @public
-     * @param string step The step to run
-     * @returns void
-     */
-    runStep : function(step) {
-        Ramble._debug("Running step: ", step);
-        var status = "step",
-            text = step,
-            found = null;
-        if ( step.indexOf('#') == 0 ) {
-            status = "comment";
-        } else {
-            $.each(this.matchers, function() {
-                var match = step.replace(/^(Given|When|Then|And)\s+/, '').match(this.regexp);
-                if ( match ) {
-                    found = { matches: match.slice(1), func: this.func };
-                    return;
-                }
-            });
-            if ( found !== null ) {
-                try {
-                    var result = found.func.apply(elements);
-                    status = "pass";
-                } catch (error) {
-                    status = "fail";
-                }
-            } else {
-                status = "missing";
-                text = Ramble.Parser.getExampleCode(step);
-            }
-        }
-        this.outputter.outputStep(text, status);
-    },
-    /**
      * Adds a path matcher
      * @public
      * @param RegExp regexp The "name" of the page as a regex
@@ -261,12 +299,50 @@ Ramble.Runner =  {
     addPath : function(regexp, path) {
         this.paths.push({regexp:regexp, path:path});
     },
-    _files : {},
+    getUrl: function(url) {
+        Ramble._debug("getUrl() ", url);
+        this.iframe.trigger('urlChange.ramble', { href: url });
+    },
+    pathTo : function(path_name) {
+        found = null;
+        $.each(this.paths, function() {
+            var match = path_name.match(this.regexp);
+            if(match) {
+                found = { matches: match.slice(1), path: this.path };
+                return;
+            };
+        });
+
+        if(found == null) {
+            this.results.append($('<p/>', { text: "Couldn't find path for: " + path, 'class': 'error' }));
+        } else {
+            try {
+                return typeof(found.path) == 'string' ? found.path : found.path.apply(ramble, found.matches);
+            } catch(error) {
+                this.results.append($('<p/>', { html: 'Problem with path: ' + path + '<br/> - ' + error, 'class': 'error' }));
+            }
+        }
+    },
     _parseFeatureFile : function(data, file) {
         var feature = Ramble.Parser.parseFeatureFile(data);
-        this.features.push( feature );
-        if ( this._files[file] ) this.runFeature(feature);
-    }
+        this.addFeatureObject(feature);
+    },
+    addFeatureObject : function(feature) {
+        var queue = this._queue;
+        queue.push(feature);
+        $.each(feature.scenarios, function() {
+            queue.push( this )
+            $.each(this.steps, function() {
+                queue.push( this );
+            })
+        });
+    },
+    before : function(beforeFunction) {
+        this._befores.push(beforeFunction);
+    },
+    _befores : [],
+    _queue : [],
+    _queue_index : 0
 }
 var ramble = Ramble.Runner;
 
