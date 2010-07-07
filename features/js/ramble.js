@@ -35,7 +35,9 @@ Ramble.Parser = {
                     return;
                 }
             } else {
-                if ( this.indexOf('Scenario:') != -1 ) {
+                if ( line == "" ) {
+                    return;
+                } else if ( this.indexOf('Scenario:') != -1 ) {
                     scenario = new Ramble.Scenario(feature);
                     feature.scenarios.push(scenario);
                     scenario.title = line;
