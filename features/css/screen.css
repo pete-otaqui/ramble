@@ -1,13 +1,71 @@
-body                { font-size: 75%; font-family: Verdana, Arial, sans-serif; min-width: 920px; padding: 16px; }
-#workspace          { float: left; }
-#results            { float: right; }
-.ramble-feature h3  { font-size: 1.2em; color: #666; margin-bottom:0px; }
-.ramble-description { padding-left:20px; margin-top:0px; color:#666; }
-.ramble-scenario    { padding-left: 20px; }
-.ramble-scenario h4 { margin-bottom:0px; }
-.ramble-steps       { list-style-type: none; margin:0; padding:0 0 0 20px; }
+/*
+-------------------------------------------------------
+Title:  Screen master styles
+Author: Jamie Hill, SonicIQ - [soniciq.com]
+Copyright: 2009-2010 SonicIQ Ltd. all rights reserved.
+------------------------------------------------------- */
+
+/* = Reset - http://meyerweb.com/eric/thoughts/2007/05/01/reset-reloaded/
+-------------------------------------------------------------------------------- */
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address,
+big, cite, code, del, dfn, em, font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, dl, dt, dd,
+ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td {
+  margin: 0; padding: 0; border: 0; outline: 0; font-weight: inherit; font-style: inherit; font-size: 100%;
+  font-family: inherit; vertical-align: baseline;
+}
+/* remember to define focus styles! */
+:focus { outline: 0; }
+body { line-height: 1; color: black; background: white; }
+ol, ul { list-style: none; }
+/* tables still need 'cellspacing="0"' in the markup */
+table { border-collapse: separate; border-spacing: 0; }
+caption, th, td { text-align: left; font-weight: normal; }
+blockquote:before, blockquote:after, q:before, q:after { content: ""; }
+blockquote, q { quotes: "" ""; }
+
+/* = HTML5 setup */
+header, section, nav, article, footer, aside, hgroup { display: block; }
+
+/* = Ramble
+------------------------------------------------------- */
+body                { font-size: 65%; font-family: "Lucida Grande", Arial, sans-serif; min-width: 800px; }
+#summary            { position: absolute; left: 0; top: 0; right: 0; height: 4em; z-index: 4;
+                      box-shadow: 0 .2em .4em rgba(0,0,0,.4);
+                      -webkit-box-shadow: 0 .2em .4em rgba(0,0,0,.4);
+                      -moz-box-shadow: 0 .2em .4em rgba(0,0,0,.4);
+                      background: #888;
+                      background: -webkit-gradient(linear, left top, left bottom, from(#8f9398), to(#5e656e));
+                      background: -moz-linear-gradient(top, #8f9398, #5e656e);
+                      border-bottom: 1px solid #545b63; }
+#summary h1         { color: #d8d9db; font-size: 1.6em; padding: .7em 0 0 20px;
+                      text-shadow: 0 -.1em 0 rgba(0,0,0,.6); }
+#summary h1 span    { color: #fff; }
+#controls           { position: absolute; left: 4; top: 4em; bottom: 0; width: 249px; margin-top: 1px;
+                      background: #e7e7e7; border-right: 1px solid #cfcfcf; z-index: 3;
+                      box-shadow: .1em 0 .3em rgba(0,0,0,.1);
+                      -webkit-box-shadow: .1em 0 .3em rgba(0,0,0,.1);
+                      -moz-box-shadow: .1em 0 .3em rgba(0,0,0,.1); }
+#controls p         { padding: 20px; color: #bbb; font-size: 1.2em; overflow: hidden; line-height: 1.8em; }
+#workspace          { position: absolute; left: 250px; top: 4em; right: 0; bottom: 300px; overflow: hidden;
+                      z-index: 1; }
+#workspace iframe   { width: 100%; height: 100%; }
+#results            { position: absolute; left: 250px; right: 0; bottom: 2.5em; height: 300px; overflow: auto; 
+                      background: #000; color: #ddd; font-family: Monaco, Courier; z-index: 2; }
+#copyright          { position: absolute; bottom: 0; left: 250px; right: 0; height: 2.5em; z-index: 6;
+                      background: #000; border-top: 1px solid #333;
+                      background: -webkit-gradient(linear, left top, left bottom, from(#222), to(#000));
+                      background: -moz-linear-gradient(top, #222, #000) }
+#copyright p        { color: #333; padding: .7em 6px; text-align: right; }
+#copyright a        { color: #444; text-decoration: none; }
+#copyright a:hover  { color: #777; }
+.ramble-feature     { padding: 16px 16px 0; font-size: 1.2em; line-height: 1.4em; }
+.ramble-feature h3  { color: #999; }
+.ramble-description { padding: 0 16px 16px; color: #666; }
+.ramble-scenario    { padding: 0 0 1em 16px; }
+.ramble-scenario h4 {  }
+.ramble-steps       { padding-left: 20px; }
 .ramble-fail        { color: #c00; }
 .ramble-fail em     { color: #f99; }
 .ramble-pass        { color: #0c0; }
 .ramble-missing     { color: #c90; }
-.ramble-comment     { color: #ccc; font-style: italic; }
+.ramble-comment     { color: #666; font-style: italic; }

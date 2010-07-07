@@ -184,8 +184,7 @@ Ramble.Runner =  {
   init: function() {
     this.outputter.start();
     if (!this.iframe) {
-      this.iframe = $('<iframe id="browser" />').appendTo(this.workspace_selector);
-      this.iframe.css({ width: 500, height: 300 });
+      this.iframe = $('<iframe />').appendTo(this.workspace_selector);
       this.iframe.load(function() {
         Ramble.Runner.page_loading = false;
         var contents = $(this).contents();
