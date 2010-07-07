@@ -28,7 +28,8 @@ header, section, nav, article, footer, aside, hgroup { display: block; }
 
 /* = Ramble
 ------------------------------------------------------- */
-body                { font-size: 65%; font-family: "Lucida Grande", Arial, sans-serif; min-width: 800px; }
+body                { font-size: 65%; font-family: "Lucida Grande", Arial, sans-serif; min-width: 800px;
+                      overflow: hidden; /* this is because Firefox seems to add shadows to width */ }
 #summary            { position: absolute; left: 0; top: 0; right: 0; height: 4em; z-index: 4;
                       box-shadow: 0 .2em .4em rgba(0,0,0,.4);
                       -webkit-box-shadow: 0 .2em .4em rgba(0,0,0,.4);
@@ -41,10 +42,7 @@ body                { font-size: 65%; font-family: "Lucida Grande", Arial, sans-
                       text-shadow: 0 -.1em 0 rgba(0,0,0,.6); }
 #summary h1 span    { color: #fff; }
 #controls           { position: absolute; left: 4; top: 4em; bottom: 0; width: 249px; margin-top: 1px;
-                      background: #e7e7e7; border-right: 1px solid #cfcfcf; z-index: 3;
-                      box-shadow: .1em 0 .3em rgba(0,0,0,.1);
-                      -webkit-box-shadow: .1em 0 .3em rgba(0,0,0,.1);
-                      -moz-box-shadow: .1em 0 .3em rgba(0,0,0,.1); }
+                      background: #e7e7e7; border-right: 1px solid #cfcfcf; z-index: 3; }
 #controls p         { padding: 20px; color: #bbb; font-size: 1.2em; overflow: hidden; line-height: 1.8em; }
 #workspace          { position: absolute; left: 250px; top: 4em; right: 0; bottom: 300px; overflow: hidden;
                       z-index: 1; }
