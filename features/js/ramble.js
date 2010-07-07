@@ -323,6 +323,9 @@ Ramble.Runner =  {
         this.paths.push({regexp:regexp, path:path});
     },
     getUrl: function(url) {
+        // should be checking for 404, 500 here with an ajax call, since
+        // you can't get it in iframes?
+        // could be tricky if a page is meant to be served N times only.
         Ramble._debug("getUrl() ", url);
         this.iframe.trigger('urlChange.ramble', { href: url });
     },
