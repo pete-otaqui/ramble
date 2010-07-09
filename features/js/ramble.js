@@ -135,10 +135,8 @@ Ramble.IOutputter = {
     stop: function() {}
 };
 Ramble.HtmlOutputter = {
-    _currentFeature : null,
-    _currentScenario : null,
-    _currentSteps : null,
     results : null,
+    results_selector: '#results',
     start: function() {
         this.results = $(this.results_selector);
     },
@@ -149,6 +147,7 @@ Ramble.HtmlOutputter = {
         var description = feature.description.split('\n').join('<br/>');
         div.append($('<p/>', { 'class': 'ramble-description', html:description }));
         this._currentFeature = div;
+        this._afterOutput();
     },
     outputScenario: function(scenario) {
         var div = $('<div/>', { 'class': 'ramble-scenario' });
@@ -157,6 +156,7 @@ Ramble.HtmlOutputter = {
         this._currentScenario = div;
         this._currentSteps = $('<ul/>', { 'class': 'ramble-steps' });
         div.append(this._currentSteps);
+        this._afterOutput();
     },
     outputStep: function(step) {
         var status = step.status;
@@ -169,9 +169,15 @@ Ramble.HtmlOutputter = {
             text += "<br />"+Ramble.Parser.getExampleCode(step, true);
         }
         var li = this._currentSteps.append($('<li/>', { 'class': className, html: text }));
+        this._afterOutput();
     },
     stop: function() {},
-    results_selector: '#results'
+    _currentFeature : null,
+    _currentScenario : null,
+    _currentSteps : null,
+    _afterOutput : function() {
+        this.results.attr({ scrollTop: this.results.attr("scrollHeight") });
+    }
 };
 
 
@@ -372,7 +378,7 @@ Ramble.Runner =  {
     _queue: [],
     _queue_index: 0,
     _times: {
-        "medium":   700,
+        "medium":   300,
         "slow":     2000
     }
 }
